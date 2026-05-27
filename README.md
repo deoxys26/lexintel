@@ -1,48 +1,78 @@
 # LexIntel ⚖️
 
-AI-powered legal document intelligence platform built with React, FastAPI, Gemini, and Qdrant.
+Enterprise-style AI-powered legal document intelligence platform built with **React, FastAPI, Google Gemini, and Qdrant Vector Database**.
 
-## Overview
+LexIntel enables users to upload PDF contracts/documents, semantically index them, and interact with them using a grounded Retrieval-Augmented Generation (RAG) AI assistant.
 
-LexIntel is an enterprise-style Retrieval-Augmented Generation (RAG) application for analyzing contracts and legal documents.
+---
 
-Users can upload PDF documents, index them into a vector database, and ask natural language questions grounded in the uploaded content.
+## Product Preview
 
-The system uses semantic retrieval + LLM reasoning for contextual analysis.
+### Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+---
+
+### AI Analysis Chat
+
+![Chat Analysis](screenshots/chat-analysis.png)
+
+---
+
+### Document Upload & Source Retrieval
+
+![Upload Panel](screenshots/upload-panel.png)
 
 ---
 
 ## Features
 
-- PDF contract/document upload
-- Automatic document chunking
-- Gemini embedding generation
-- Qdrant vector database storage
-- Semantic similarity search
-- Grounded RAG-based AI assistant
-- React enterprise dashboard UI
-- Source citation retrieval
-- KPI dashboard cards
-- FastAPI layered backend architecture
+✅ PDF document upload and indexing  
+✅ Semantic chunking and vector storage  
+✅ Gemini embeddings for retrieval  
+✅ Qdrant vector database integration  
+✅ Retrieval-Augmented Generation (RAG) pipeline  
+✅ AI-powered document Q&A assistant  
+✅ Enterprise React dashboard UI  
+✅ Source citation retrieval  
+✅ Layered FastAPI backend architecture  
+✅ KPI monitoring dashboard  
 
 ---
 
 ## Architecture
 
 ```text
-React Frontend
-    ↓
-FastAPI API Layer
-    ↓
-Service Layer
-    ↓
-Repository Layer
-    ↓
-Gemini Embeddings
-    ↓
-Qdrant Vector DB
-    ↓
-RAG Retrieval + LLM Response
+                ┌───────────────────────────────┐
+                │        React Frontend         │
+                │   Dashboard + AI Chat UI      │
+                └──────────────┬────────────────┘
+                               │
+                               ▼
+                ┌───────────────────────────────┐
+                │         FastAPI Backend       │
+                │ API Routes + Business Logic   │
+                └──────────────┬────────────────┘
+                               │
+                               ▼
+                ┌───────────────────────────────┐
+                │        Service Layer          │
+                │ Document / Analysis Services  │
+                └──────────────┬────────────────┘
+                               │
+                               ▼
+                ┌───────────────────────────────┐
+                │       Repository Layer        │
+                │ Qdrant + File Persistence     │
+                └──────────────┬────────────────┘
+                               │
+          ┌────────────────────┴────────────────────┐
+          ▼                                         ▼
+ ┌────────────────────┐                  ┌────────────────────┐
+ │ Google Gemini API  │                  │   Qdrant Vector DB │
+ │ Embeddings + LLM   │                  │ Semantic Retrieval │
+ └────────────────────┘                  └────────────────────┘
 ```
 
 ---
@@ -61,48 +91,81 @@ RAG Retrieval + LLM Response
 - Uvicorn
 - Python
 
-### AI / Vector Stack
+### AI / Data Layer
 - Google Gemini API
 - Qdrant Cloud
 - Retrieval-Augmented Generation (RAG)
+- Vector Search
+- PDF Parsing
 
 ---
 
-## Project Structure
+## Backend Architecture
 
 ```text
-lexintel/
+backend/
 │
-├── backend/
-│   └── app/
-│       ├── api/
-│       ├── core/
-│       ├── repositories/
-│       ├── schemas/
-│       └── services/
-│
-├── frontend/
-│   └── src/
-│       ├── api/
-│       ├── components/
-│       ├── pages/
-│       └── App.jsx
+├── app/
+│   ├── api/
+│   │   └── routes/
+│   │       ├── upload.py
+│   │       └── analysis.py
+│   │
+│   ├── core/
+│   │   └── config.py
+│   │
+│   ├── repositories/
+│   │   ├── file_repository.py
+│   │   └── qdrant_repository.py
+│   │
+│   ├── schemas/
+│   │   └── analysis_schema.py
+│   │
+│   └── services/
+│       ├── analysis_service.py
+│       ├── embedding_service.py
+│       ├── gemini_service.py
+│       └── pdf_service.py
 ```
 
 ---
 
-## Setup
+## Frontend Architecture
 
-### Clone
+```text
+frontend/
+│
+├── src/
+│   ├── api/
+│   │   └── contractApi.js
+│   │
+│   ├── components/
+│   │   ├── chat/
+│   │   ├── dashboard/
+│   │   ├── layout/
+│   │   └── upload/
+│   │
+│   ├── pages/
+│   │   └── Dashboard.jsx
+│   │
+│   ├── App.jsx
+│   └── App.css
+```
+
+---
+
+## Setup Instructions
+
+### Clone repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/lexintel.git
+git clone https://github.com/deoxys26/lexintel.git
 cd lexintel
 ```
 
 ---
 
-### Backend setup
+## Backend Setup
 
 ```bash
 cd backend
@@ -114,9 +177,9 @@ pip install -r requirements.txt
 Create `.env`
 
 ```env
-GOOGLE_API_KEY=your_key
-QDRANT_URL=your_qdrant_url
-QDRANT_API_KEY=your_qdrant_key
+GOOGLE_API_KEY=your_google_api_key
+QDRANT_URL=your_qdrant_cluster_url
+QDRANT_API_KEY=your_qdrant_api_key
 QDRANT_COLLECTION=legal_documents
 ```
 
@@ -128,7 +191,7 @@ uvicorn app.main:app --reload
 
 ---
 
-### Frontend setup
+## Frontend Setup
 
 ```bash
 cd frontend
@@ -136,46 +199,74 @@ npm install
 npm run dev
 ```
 
+Open:
+
+```text
+http://localhost:5173
+```
+
 ---
 
 ## API Endpoints
 
-### Upload document
+### Upload Document
 
 ```http
 POST /api/contracts/upload
 ```
 
-### Analyze document
+Uploads and indexes PDF into vector DB.
+
+---
+
+### Analyze Document
 
 ```http
 POST /api/analysis/analyze
 ```
 
+Performs semantic retrieval + Gemini grounded response generation.
+
 ---
 
-## Future Improvements
+## Example Workflow
+
+1. Upload a PDF contract/document
+2. Backend extracts text
+3. Document is chunked
+4. Gemini generates embeddings
+5. Qdrant stores vectors
+6. User asks a question
+7. Query is embedded
+8. Relevant chunks retrieved
+9. Gemini generates grounded answer
+
+---
+
+## Future Enhancements
 
 - Risk scoring engine
 - Clause extraction
 - Multi-document comparison
 - User authentication
 - Persistent document history
-- Deployment
-- Role-based access
+- Legal clause classification
+- Document version diff analysis
 
 ---
 
 ## Resume Highlights
 
-Enterprise-style full-stack AI application featuring:
+Enterprise full-stack AI application demonstrating:
 
-- Layered backend architecture
-- Vector search
-- Semantic retrieval
-- LLM integration
-- React dashboard
-- RAG pipeline engineering
+- Production-style backend architecture
+- Retrieval-Augmented Generation
+- Vector database integration
+- LLM orchestration
+- Semantic search
+- React dashboard engineering
+- API design
+- Cloud AI integration
 
 ---
 
