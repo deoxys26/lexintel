@@ -10,19 +10,22 @@ LexIntel enables users to upload PDF contracts/documents, semantically index the
 
 ### Dashboard
 
-![Dashboard](screenshots/dashboard.png)
+<img width="1078" height="342" alt="image" src="https://github.com/user-attachments/assets/cc11faea-4c02-4868-9a5c-3393a3f7ce87" />
+
 
 ---
 
 ### AI Analysis Chat
 
-![Chat Analysis](screenshots/chat-analysis.png)
+<img width="600" height="837" alt="image" src="https://github.com/user-attachments/assets/12360528-7129-4e72-ba7f-2e4d589bce88" />
+
 
 ---
 
 ### Document Upload & Source Retrieval
 
-![Upload Panel](screenshots/upload-panel.png)
+<img width="1830" height="863" alt="image" src="https://github.com/user-attachments/assets/450bb186-dca9-490d-9d5f-ca8ca1ad272d" />
+
 
 ---
 
