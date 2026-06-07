@@ -6,4 +6,4 @@ python-dotenv
 pydantic-settings
 pypdf
 qdrant-client
-QDRANT_COLLECTION=legal_documents
+pymupdf

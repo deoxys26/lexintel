@@ -11,6 +11,7 @@ function Dashboard() {
   const [uploadStatus, setUploadStatus] = useState("");
   const [sources, setSources] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const [stats, setStats] = useState({
     documents: 0,
     chunks: 0,
@@ -23,6 +24,7 @@ function Dashboard() {
       role: "ai",
       content:
         "Upload a contract or document, then ask me to summarize, find risks, or explain important clauses.",
+      sources: [],
     },
   ]);
 
@@ -34,19 +36,38 @@ function Dashboard() {
 
     try {
       setLoading(true);
+
       const data = await uploadContract(selectedFile);
 
       setUploadStatus(`${data.message}. Chunks created: ${data.chunks_created}`);
 
-      setStats({
-        documents: stats.documents + 1,
-        chunks: stats.chunks + (data.chunks_created || 0),
+      setStats((prev) => ({
+        documents: prev.documents + 1,
+        chunks: prev.chunks + (data.chunks_created || 0),
         status: "Indexed",
         lastFile: data.filename,
-      });
+      }));
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: `Document uploaded and indexed successfully: ${data.filename}`,
+          sources: [],
+        },
+      ]);
     } catch (error) {
       setUploadStatus("Upload failed");
       console.error(error);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          content: "Upload failed. Please check backend terminal.",
+          sources: [],
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -61,20 +82,23 @@ function Dashboard() {
         {
           role: "user",
           content: query,
+          sources: [],
         },
       ]);
 
       const data = await analyzeContract(query);
+      const retrievedSources = data.sources || [];
 
       setMessages((prev) => [
         ...prev,
         {
           role: "ai",
           content: data.analysis,
+          sources: retrievedSources,
         },
       ]);
 
-      setSources(data.sources || []);
+      setSources(retrievedSources);
     } catch (error) {
       console.error(error);
 
@@ -83,6 +107,7 @@ function Dashboard() {
         {
           role: "ai",
           content: "Analysis failed. Please check backend terminal.",
+          sources: [],
         },
       ]);
     } finally {
@@ -95,17 +120,36 @@ function Dashboard() {
       <section className="topbar">
         <div>
           <h1>Contract Intelligence Dashboard</h1>
-          <p>Analyze documents using Gemini, Qdrant, and retrieval-augmented generation.</p>
+          <p>
+            Analyze documents using Gemini, Qdrant, and retrieval-augmented
+            generation.
+          </p>
         </div>
 
         <div className="status-pill">{stats.status}</div>
       </section>
 
       <section className="stats-grid">
-        <RiskCard title="Documents Indexed" value={stats.documents} subtitle="Uploaded PDFs" />
-        <RiskCard title="Chunks Stored" value={stats.chunks} subtitle="Vectorized segments" />
-        <RiskCard title="AI Pipeline" value="Online" subtitle="Gemini + Qdrant" />
-        <RiskCard title="Last Upload" value={stats.lastFile} subtitle="Most recent file" />
+        <RiskCard
+          title="Documents Indexed"
+          value={stats.documents}
+          subtitle="Uploaded PDFs"
+        />
+        <RiskCard
+          title="Chunks Stored"
+          value={stats.chunks}
+          subtitle="Vectorized segments"
+        />
+        <RiskCard
+          title="AI Pipeline"
+          value="Online"
+          subtitle="Gemini + Qdrant"
+        />
+        <RiskCard
+          title="Last Upload"
+          value={stats.lastFile}
+          subtitle="Most recent file"
+        />
       </section>
 
       <section className="workspace-grid">
@@ -132,6 +176,7 @@ function Dashboard() {
                 key={index}
                 role={message.role}
                 content={message.content}
+                sources={message.sources}
               />
             ))}
 
@@ -139,6 +184,7 @@ function Dashboard() {
               <MessageBubble
                 role="ai"
                 content="Processing your request..."
+                sources={[]}
               />
             )}
           </div>

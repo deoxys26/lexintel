@@ -33,7 +33,23 @@ class QdrantRepository:
                 )
             )
 
-    def insert_chunks(self, chunks: list[str], embeddings: list[list[float]], filename: str):
+    def insert_chunks(
+        self,
+        chunks: list[dict],
+        embeddings: list[list[float]]
+    ):
+        """
+        Store document chunks and their embeddings in Qdrant.
+
+        Each chunk should contain:
+        {
+            "text": "...",
+            "filename": "contract.pdf",
+            "page": 1,
+            "chunk_index": 0
+        }
+        """
+
         points = []
 
         for index, chunk in enumerate(chunks):
@@ -42,9 +58,10 @@ class QdrantRepository:
                     id=str(uuid.uuid4()),
                     vector=embeddings[index],
                     payload={
-                        "text": chunk,
-                        "filename": filename,
-                        "chunk_index": index
+                        "text": chunk.get("text", ""),
+                        "filename": chunk.get("filename", "Unknown file"),
+                        "page": chunk.get("page", "Unknown page"),
+                        "chunk_index": chunk.get("chunk_index", index)
                     }
                 )
             )
@@ -54,18 +71,35 @@ class QdrantRepository:
             points=points
         )
 
-    def search_similar_chunks(self, query_embedding: list[float], limit: int = 5):
-        results = self.client.query_points(
-        collection_name=self.collection_name,
-        query=query_embedding,
-        limit=limit
-    ).points
+    def search_similar_chunks(
+        self,
+        query_embedding: list[float],
+        limit: int = 5
+    ) -> list[dict]:
+        """
+        Search Qdrant using query embedding.
 
-        return [
-        {
-            "text": result.payload.get("text", ""),
-            "filename": result.payload.get("filename", ""),
-            "score": result.score
-        }
-        for result in results
-    ]
+        Returns source chunks with filename, page number, score, and text.
+        """
+
+        results = self.client.query_points(
+            collection_name=self.collection_name,
+            query=query_embedding,
+            limit=limit,
+            with_payload=True
+        ).points
+
+        sources = []
+
+        for result in results:
+            payload = result.payload or {}
+
+            sources.append({
+                "text": payload.get("text", ""),
+                "filename": payload.get("filename", "Unknown file"),
+                "page": payload.get("page", "Unknown page"),
+                "chunk_index": payload.get("chunk_index", 0),
+                "score": round(result.score, 4)
+            })
+
+        return sources
