@@ -462,26 +462,7 @@ The project was improved from a basic RAG chatbot into a more reliable document 
 
 ---
 
-## Screenshots to Add
 
-Add screenshots in your repository later:
-
-```text
-assets/
-  upload-success.png
-  grounded-answer.png
-  sources-ui.png
-  swagger-response.png
-```
-
-Then update this section with image links:
-
-```md
-![Upload Success](assets/upload-success.png)
-![Source Grounded Answer](assets/grounded-answer.png)
-```
-
----
 
 ## Future Improvements
 
