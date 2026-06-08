@@ -7,3 +7,5 @@ pydantic-settings
 pypdf
 qdrant-client
 pymupdf
+sentence-transformers
+torch

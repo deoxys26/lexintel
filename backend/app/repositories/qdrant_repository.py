@@ -39,30 +39,63 @@ class QdrantRepository:
         embeddings: list[list[float]]
     ):
         """
-        Store document chunks and their embeddings in Qdrant.
+        Store LexIntel 3.0 parent-child chunks and their embeddings in Qdrant.
+
+        Important:
+        - We embed child chunks.
+        - We store parent_text in payload.
+        - During search, child_text helps retrieval.
+        - During answer generation, parent_text gives full legal context.
 
         Each chunk should contain:
         {
-            "text": "...",
+            "text": "small searchable child chunk",
+            "child_text": "small searchable child chunk",
+            "parent_text": "larger legal context",
+            "parent_id": "...",
+            "child_id": "...",
+            "chunk_type": "child",
             "filename": "contract.pdf",
             "page": 1,
-            "chunk_index": 0
+            "parent_index": 0,
+            "child_index": 0
         }
         """
+
+        if len(chunks) != len(embeddings):
+            raise ValueError("Number of chunks and embeddings must be equal")
 
         points = []
 
         for index, chunk in enumerate(chunks):
+            point_id = chunk.get("child_id") or str(uuid.uuid4())
+
+            payload = {
+                # Searchable text
+                "text": chunk.get("text", ""),
+                "child_text": chunk.get("child_text", chunk.get("text", "")),
+
+                # Parent-child retrieval metadata
+                "parent_text": chunk.get("parent_text", ""),
+                "parent_id": chunk.get("parent_id", ""),
+                "child_id": point_id,
+                "chunk_type": chunk.get("chunk_type", "child"),
+
+                # Source metadata
+                "filename": chunk.get("filename", "Unknown file"),
+                "page": chunk.get("page", "Unknown page"),
+                "parent_index": chunk.get("parent_index", 0),
+                "child_index": chunk.get("child_index", index),
+
+                # Backward compatibility with old UI/backend
+                "chunk_index": chunk.get("chunk_index", chunk.get("child_index", index))
+            }
+
             points.append(
                 PointStruct(
-                    id=str(uuid.uuid4()),
+                    id=point_id,
                     vector=embeddings[index],
-                    payload={
-                        "text": chunk.get("text", ""),
-                        "filename": chunk.get("filename", "Unknown file"),
-                        "page": chunk.get("page", "Unknown page"),
-                        "chunk_index": chunk.get("chunk_index", index)
-                    }
+                    payload=payload
                 )
             )
 
@@ -74,12 +107,15 @@ class QdrantRepository:
     def search_similar_chunks(
         self,
         query_embedding: list[float],
-        limit: int = 5
+        limit: int = 20
     ) -> list[dict]:
         """
         Search Qdrant using query embedding.
 
-        Returns source chunks with filename, page number, score, and text.
+        LexIntel 3.0:
+        - Qdrant retrieves child chunks.
+        - Each result also returns parent_text.
+        - Later, reranker can score the query against child_text/parent_text.
         """
 
         results = self.client.query_points(
@@ -94,11 +130,30 @@ class QdrantRepository:
         for result in results:
             payload = result.payload or {}
 
+            child_text = payload.get("child_text", payload.get("text", ""))
+            parent_text = payload.get("parent_text", "")
+
             sources.append({
-                "text": payload.get("text", ""),
+                # Main fields
+                "text": child_text,
+                "child_text": child_text,
+                "parent_text": parent_text,
+
+                # Parent-child IDs
+                "parent_id": payload.get("parent_id", ""),
+                "child_id": payload.get("child_id", ""),
+                "chunk_type": payload.get("chunk_type", "child"),
+
+                # Source metadata
                 "filename": payload.get("filename", "Unknown file"),
                 "page": payload.get("page", "Unknown page"),
-                "chunk_index": payload.get("chunk_index", 0),
+                "parent_index": payload.get("parent_index", 0),
+                "child_index": payload.get("child_index", 0),
+
+                # Backward compatibility
+                "chunk_index": payload.get("chunk_index", payload.get("child_index", 0)),
+
+                # Vector search score
                 "score": round(result.score, 4)
             })
 

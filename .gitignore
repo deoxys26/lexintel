@@ -1,27 +1,21 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+# Python virtual environments
+backend/myenv/
+backend/venv/
+myenv/
 venv/
 .env
 
-# FastAPI
-*.db
+# Python cache
+__pycache__/
+*.pyc
 
-# Node
+# Node modules
 frontend/node_modules/
 node_modules/
 
-# Vite
+# Build files
 frontend/dist/
+dist/
 
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+# Uploaded/local files
 backend/uploads/
-uploads/
