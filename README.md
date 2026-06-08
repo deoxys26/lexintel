@@ -487,6 +487,13 @@ This project can be described on a resume as:
 > Built LexIntel, a full-stack legal document intelligence platform using FastAPI, React, Gemini, and Qdrant. Improved the RAG pipeline by adding source-grounded answers with filename, page number, retrieved text, chunk index, and similarity scores for better trust and reduced hallucination.
 
 ---
+## Advanced Version
+
+The advanced Phase 2 RAG upgrade is available in a separate branch:
+
+`lexintel-3-rag-upgrade`
+
+This branch includes parent-child chunking, Qdrant metadata improvements, and cross-encoder re-ranking.
 
 ## Author
 
