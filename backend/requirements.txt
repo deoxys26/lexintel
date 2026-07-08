@@ -9,3 +9,6 @@ qdrant-client
 pymupdf
 sentence-transformers
 torch
+pydantic
+requests
+numpy
