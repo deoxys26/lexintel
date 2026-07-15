@@ -225,19 +225,45 @@ function App() {
 
       return data;
     } catch (error) {
-      const detail = error?.response?.data?.detail;
-      setMessages((previous) => [
-        ...previous,
-        {
-          role: "ai",
-          content:
-            detail ||
-            "Analysis failed. Check the FastAPI backend, Gemini configuration, and Qdrant connection before trying again.",
-          sources: [],
-        },
-      ]);
-      return null;
-    } finally {
+  console.error("LexIntel analysis error:", error);
+
+  const detail = error?.response?.data?.detail;
+
+  const isTimeout =
+    error?.code === "ECONNABORTED" ||
+    error?.message?.toLowerCase().includes("timeout");
+
+  const isNetworkError =
+    error?.message === "Network Error" ||
+    (!error?.response && !isTimeout);
+
+  let errorMessage =
+    "Analysis failed. Check the FastAPI backend, Gemini configuration, and Qdrant connection before trying again.";
+
+  if (detail) {
+    errorMessage =
+      typeof detail === "string"
+        ? detail
+        : JSON.stringify(detail);
+  } else if (isTimeout) {
+    errorMessage =
+      "The initial analysis is taking longer than expected. The document is still indexed correctly. Please wait a moment and try again.";
+  } else if (isNetworkError) {
+    errorMessage =
+      "The frontend could not reach the analysis backend. Verify the deployed API URL and confirm that the backend is running.";
+  }
+
+  setMessages((previous) => [
+    ...previous,
+    {
+      role: "ai",
+      content: errorMessage,
+      sources: [],
+    },
+  ]);
+
+  return null;
+} finally {
       setLoading(false);
     }
   };

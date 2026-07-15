@@ -74,7 +74,9 @@ function AnalysisPage({
           title="Document indexed and ready"
           description="Ask LexIntel a focused question to retrieve the most relevant child chunks, rerank them, and generate a source-grounded analysis."
           action={
-            <Button onClick={() => onAnalyze("Summarise this document and identify important risks or concerns.")} disabled={loading}>
+            <Button onClick={() =>onAnalyze(
+  "Provide a concise executive summary of this document. List the five most important clauses and the three highest-priority risks requiring legal review."
+)} disabled={loading}>
               Run initial analysis
             </Button>
           }
