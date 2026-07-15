@@ -19,3 +19,27 @@ dist/
 
 # Uploaded/local files
 backend/uploads/
+
+
+# Frontend new dependencies and build files
+frontend-new/node_modules/
+frontend-new/dist/
+
+# Frontend environment secrets
+frontend-new/.env
+frontend-new/.env.local
+frontend-new/.env.development.local
+frontend-new/.env.production.local
+
+# Vite cache
+frontend-new/.vite/
+
+# Logs
+frontend-new/*.log
+frontend-new/npm-debug.log*
+frontend-new/yarn-debug.log*
+frontend-new/yarn-error.log*
+
+# Editor / OS
+frontend-new/.DS_Store
+frontend-new/Thumbs.db
